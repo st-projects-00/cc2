@@ -22,12 +22,22 @@ public interface TmdbApi {
             @Query("language") String language
     );
 
-    @GET("movie/upcoming")
+
+    //use now playing for more movies
+    //@GET("movie/upcoming")
+    @GET("movie/now_playing")
     Observable<UpcomingMoviesResponse> upcomingMovies(
             @Query("api_key") String apiKey,
             @Query("language") String language,
             @Query("page") Long page,
             @Query("region") String region
+    );
+
+    @GET("search/movie")
+    Observable<UpcomingMoviesResponse> searchMovies(
+            @Query("api_key") String apiKey,
+            @Query("query") String query,
+            @Query("page") Long page
     );
 
     @GET("movie/{id}")

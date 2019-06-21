@@ -1,5 +1,6 @@
 package com.arctouch.codechallenge.model;
 
+import android.util.Log;
 import android.view.View;
 
 import com.arctouch.codechallenge.api.TmdbApi;
@@ -47,7 +48,7 @@ public class ApiModel implements MovieContract.Model {
     @Override
     public void getUpcomingMovies() {
 
-                    api.upcomingMovies(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, 1L, TmdbApi.DEFAULT_REGION)
+                    api.upcomingMovies(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, Cache.getPage(), TmdbApi.DEFAULT_REGION)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(response0 -> {
@@ -67,7 +68,27 @@ public class ApiModel implements MovieContract.Model {
     }
 
     @Override
-    public void getDetails(String id) {
+    public void getSearch(String search) {
+
+        api.searchMovies(TmdbApi.API_KEY,search, Cache.getPage())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnError(throwable -> {Log.d("test1"," "+throwable.getMessage());})
+                .subscribe(response0 -> {
+                    for (Movie movie : response0.results) {
+                        movie.genres = new ArrayList<>();
+                        for (Genre genre : Cache.getGenres()) {
+                            if (movie.genreIds.contains(genre.id)) {
+                                movie.genres.add(genre);
+                            }
+                        }
+                    }
+                    moviePresenter.handleMoviesList(response0);
+
+                });
+
+
+
 
     }
 }

@@ -21,6 +21,22 @@ public class Cache {
         Cache.position=position;
     }
 
+    private static Long page;
+
+    public static Long getPage() {
+        return page;
+    }
+
+    public static void setPage(Long page) {
+        Log.d("test1","setpos"+page);
+        Cache.page=page;
+    }
+
+
+
+
+
+
     private static List<Genre> genres = new ArrayList<>();
 
     public static List<Genre> getGenres() {

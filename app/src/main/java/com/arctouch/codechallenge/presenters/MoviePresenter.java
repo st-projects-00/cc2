@@ -1,5 +1,7 @@
 package com.arctouch.codechallenge.presenters;
 
+import android.util.Log;
+
 import com.arctouch.codechallenge.contracts.MovieContract;
 import com.arctouch.codechallenge.data.Cache;
 import com.arctouch.codechallenge.model.ApiModel;
@@ -10,6 +12,7 @@ public class MoviePresenter implements MovieContract.Presenter {
 
     private MovieContract.View view;
     private ApiModel apiModel;
+    private String search;
 
     public MoviePresenter(MovieContract.View view) {
         this.view = view;
@@ -17,7 +20,8 @@ public class MoviePresenter implements MovieContract.Presenter {
     }
 
     @Override
-    public void cacheData() {
+    public void cacheData(String search) {
+        this.search=search;
         apiModel.cache();
     }
 
@@ -28,7 +32,11 @@ public class MoviePresenter implements MovieContract.Presenter {
 
     @Override
     public void returnMovieList() {
-        apiModel.getUpcomingMovies();
+        if (search.isEmpty()){
+        apiModel.getUpcomingMovies();}
+        else {
+            apiModel.getSearch(search);
+        }
     }
 
     @Override
@@ -38,8 +46,9 @@ public class MoviePresenter implements MovieContract.Presenter {
 
     @Override
     public void handleMoviesList(UpcomingMoviesResponse upcomingMoviesResponse) {
-
-        view.showMovieList(upcomingMoviesResponse);
+        Cache.setMovies(upcomingMoviesResponse.results);
+        Log.d("test1","data");
+        view.showMovieList(upcomingMoviesResponse.results);
     }
 
     @Override

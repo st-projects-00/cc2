@@ -3,6 +3,8 @@ package com.arctouch.codechallenge.home;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import static android.nfc.tech.MifareUltralight.PAGE_SIZE;
+
 public abstract class PaginationListener extends RecyclerView.OnScrollListener {
 //3rd party library
     LinearLayoutManager layoutManager;
@@ -21,7 +23,7 @@ public abstract class PaginationListener extends RecyclerView.OnScrollListener {
 
         if (!isLoading() && !isLastPage()) {
             if ((visibleItemCount + firstVisibleItemPosition) >=
-                    totalItemCount && firstVisibleItemPosition >= 0) {
+                    totalItemCount && firstVisibleItemPosition >= 0&& totalItemCount >= PAGE_SIZE) {
                 loadMoreItems();
             }
         }

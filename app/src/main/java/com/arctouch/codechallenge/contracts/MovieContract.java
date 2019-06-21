@@ -1,7 +1,10 @@
 package com.arctouch.codechallenge.contracts;
 
 import com.arctouch.codechallenge.model.Details;
+import com.arctouch.codechallenge.model.Movie;
 import com.arctouch.codechallenge.model.UpcomingMoviesResponse;
+
+import java.util.List;
 
 public class MovieContract {
 
@@ -9,7 +12,7 @@ public class MovieContract {
           //from view
            void returnMovieList();
            void returnMovieDetail(String id) ;
-           void cacheData();
+           void cacheData(String search);
            //from model
             void handleMoviesList(UpcomingMoviesResponse upcomingMoviesResponse);
             void handleDetails(Details details);
@@ -17,7 +20,7 @@ public class MovieContract {
         }
 
         public interface View {
-           void showMovieList(UpcomingMoviesResponse movie);
+           void showMovieList(List<Movie> movie);
            void showDetails(Details details);
             void cacheComplete();
         }
@@ -25,7 +28,7 @@ public class MovieContract {
     public interface Model {
         void cache();
         void getUpcomingMovies();
-        void getDetails(String id);
+        void getSearch(String search);
     }
     }
 
