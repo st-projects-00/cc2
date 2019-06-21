@@ -7,6 +7,8 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 
 import com.arctouch.codechallenge.R;
@@ -22,7 +24,7 @@ import java.util.List;
 public class HomeActivity extends AppCompatActivity implements MovieContract.View {
 
     // Index from which pagination should start (0 is 1st page in our case)
-    private static final int PAGE_START = 0;
+    private static final long PAGE_START = 0;
 
     // Indicates if footer ProgressBar is shown (i.e. next page is loading)
     private boolean isLoading = false;
@@ -31,16 +33,19 @@ public class HomeActivity extends AppCompatActivity implements MovieContract.Vie
     private boolean isLastPage = false;
 
     // total no. of pages to load. Initial load is page 0, after which 2 more pages will load.
-    private int TOTAL_PAGES = 3;
+    private int TOTAL_PAGES = 10;
     // indicates the current page which Pagination is fetching.
-    private int currentPage = PAGE_START;
+    private long currentPage = PAGE_START;
 
     private HomeAdapter adapter;
 
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private MoviePresenter moviePresenter;
-    LinearLayoutManager linearLayoutManager;
+    private LinearLayoutManager linearLayoutManager;
+    private boolean firstLoad;
+    private EditText editText;
+    private Button search;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,11 +55,9 @@ public class HomeActivity extends AppCompatActivity implements MovieContract.Vie
 
         this.recyclerView = findViewById(R.id.recyclerView);
         this.progressBar = findViewById(R.id.progressBar);
-        moviePresenter.cacheData();
-    }
-
-    @Override
-    public void showMovieList(UpcomingMoviesResponse movie) {
+        this.editText=findViewById(R.id.titleTextView);
+        this.search=findViewById(R.id.search);
+        firstLoad = true;
         linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -63,12 +66,12 @@ public class HomeActivity extends AppCompatActivity implements MovieContract.Vie
         recyclerView.addOnScrollListener(new PaginationListener(linearLayoutManager) {
             @Override
             protected void loadMoreItems() {
+                progressBar.setVisibility(View.VISIBLE);
                 isLoading = true;
                 //Increment page index to load the next one
                 currentPage += 1;
-                if (!Cache.getMovies().isEmpty()) {
-                    loadNextPage(Cache.getMovies());
-                }
+                Cache.setPage(currentPage);
+                moviePresenter.cacheData(editText.getText().toString());
             }
 
             @Override
@@ -87,10 +90,33 @@ public class HomeActivity extends AppCompatActivity implements MovieContract.Vie
             }
         });
 
-        adapter = new HomeAdapter(movie.results, this);
-        recyclerView.setAdapter(adapter);
+        search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                currentPage = 1;
+                Cache.setPage(currentPage);
+                moviePresenter.cacheData(editText.getText().toString());
+            }
+        });
+
         progressBar.setVisibility(View.GONE);
-        Cache.setMovies(movie.results);
+        if (Cache.getMovies().isEmpty()) {
+            moviePresenter.cacheData(editText.getText().toString());
+        } else {
+            showMovieList(Cache.getMovies());
+        }
+    }
+
+    @Override
+    public void showMovieList(List<Movie> movie) {
+        progressBar.setVisibility(View.GONE);
+        if (firstLoad) {
+            adapter = new HomeAdapter(movie, this);
+            recyclerView.setAdapter(adapter);
+        } else {
+            firstLoad = false;
+            loadNextPage(movie);
+        }
     }
 
     @Override
@@ -104,7 +130,6 @@ public class HomeActivity extends AppCompatActivity implements MovieContract.Vie
     }
 
     private void loadNextPage(List<Movie> list) {
-
         adapter.removeLoadingFooter();
         isLoading = false;
         adapter.addAll(list);
